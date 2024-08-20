@@ -1,0 +1,67 @@
+---
+title: "Tugas Praktikum 8"
+author: "Laksmi"
+date: "2024-05-16"
+output: html_document
+---
+
+# Import Data
+```{r}
+library(readxl)
+BBNIJK <- read_excel("D:/SMT 6/PRAK ANALISIS DERET WAKTU/PERTEMUAN 2/BBNI.JK.xlsx")
+BBNIJK
+```
+
+# Ambil Data (6)
+```{r}
+Close = ts(BBNIJK[,5])
+```
+
+# Melakukan differencing terhadap tren (diff 1x)
+```{r}
+diff1.Close = diff(Close)
+plot.ts(diff1.Close)
+```
+
+# Melakukan differencing terhadap tren (diff 2x)
+```{r}
+diff2.Close = diff(diff1.Close)
+plot.ts(diff2.Close)
+```
+
+# Menggunakan EACF
+```{r}
+library(TSA)
+eacf(diff2.Close, ar.max = 8, ma.max = 14)
+```
+> DI sini, saya menggunakan kandidat ARIMA(2,2,4)
+
+# Model ARIMA dengan kandidat ARIMA(2,2,4)
+```{r}
+# Kandidat Model ARIMA (2,2,4)
+
+Close.ARIMA2.2.4 = arima(Close, order = c(2,2,4))
+Close.ARIMA2.2.4
+```
+# Kesimpulan:
+1. Diperoleh estimasi sigma^2 : 20375
+2. Model AR1 : -0.8388
+3. Model AR2 : -0.9777
+3. Model MA! : -0.1233
+4. Model MA2 : 0.1430
+5. Model MA3 : -0.9947
+6. Model MA4 : -0.0167
+
+```{r}
+# Kandidat Model ARIMA (2,2,4)
+
+Close.ARIMA2.2.5 = arima(Close, order = c(2,2,5))
+Close.ARIMA2.2.5
+```
+
+```{r}
+# Kandidat Model ARIMA (0,2,1)
+
+Close.ARIMA0.2.1 = arima(Close, order = c(0,2,1))
+Close.ARIMA0.2.1
+```

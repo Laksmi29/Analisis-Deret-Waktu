@@ -1,0 +1,175 @@
+---
+title: "Tugas Pertemuan 6"
+author: "Laksmi"
+date: "2024-04-12"
+output: html_document
+---
+
+# 1. Membuat model ARMA
+```{r}
+set.seed(234)
+xt = arima.sim(n = 2000, list(ar = c(0.7), ma = c(0.2)))
+xt
+```
+```{r}
+# Mencari rata-rata dan variansi
+mean(xt)
+var(xt)
+```
+
+```{r}
+#Plot ACF dan PACF
+library(astsa)
+acf2(xt)
+```
+
+# Interpretasi:
+1. ACF: menurun secara cepat mendekati 0.
+2. PACF: menurun scara cepat mendekati 0.
+
+```{r}
+#Memperoleh model yang sesuai (p,d,q)
+mod = arima(xt, order = c(1, 0, 1))
+mod
+# p: ar, d: differencing, q: ma
+```
+
+# Interpretasi:
+1. Estimasi rata-rata: -0.0343
+2. Slope dari AR: 0.7067
+3. slope dari MA: 0.1831
+4. Estimasi white noise: 0.9746
+
+```{r}
+#Prediksi
+predict(mod, n.ahead = 12)$pred
+```
+
+# Interpretasi
+Diperoleh hasil prediksi pada 12 tahun ke depan dari tahun 2001 hingga 2012.
+
+# Jika AR: -0.7 dan MA: 0.2
+```{r}
+set.seed(234)
+xt1 = arima.sim(n = 2000, list(ar = c(-0.7), ma = c(0.2)))
+xt1
+```
+
+```{r}
+# Mencari rata-rata dan variansi
+mean(xt1)
+var(xt1)
+```
+
+```{r}
+#Plot ACF dan PACF
+acf(xt1, lag.max = 50)
+pacf(xt1, lag.max = 50)
+```
+
+# Interpretasi:
+1. ACF: menurun secara cepat mendekati 0.
+2. PACF: menurun scara cepat mendekati 0.
+
+```{r}
+#Memperoleh model yang sesuai (p,d,q)
+mod1 = arima(xt1, order = c(1, 0, 1))
+mod1
+# p: ar, d: differencing, q: ma
+```
+
+# Interpretasi:
+1. Estimasi rata-rata: -0.0063
+2. Slope dari AR: -0.6831
+3. slope dari MA: 0.1710
+4. Estimasi white noise: 0.9745
+
+```{r}
+#Prediksi
+predict(mod1, n.ahead = 12)$pred
+```
+
+# Jika AR: -0.7 dan MA: -0.2
+```{r}
+set.seed(234)
+xt2 = arima.sim(n = 2000, list(ar = c(-0.7), ma = c(-0.2)))
+xt2
+```
+
+```{r}
+# Mencari rata-rata dan variansi
+mean(xt2)
+var(xt2)
+```
+
+```{r}
+#Plot ACF dan PACF
+acf(xt2, lag.max = 50)
+pacf(xt2, lag.max = 50)
+```
+
+# Interpretasi:
+1. ACF: menurun secara cepat mendekati 0.
+2. PACF: menurun scara cepat mendekati 0.
+
+```{r}
+#Memperoleh model yang sesuai (p,d,q)
+mod2 = arima(xt2, order = c(1, 0, 1))
+mod2
+# p: ar, d: differencing, q: ma
+```
+
+# Interpretasi:
+1. Estimasi rata-rata: -0.0042
+2. Slope dari AR: -0.6918
+3. slope dari MA: -0.2188
+4. Estimasi white noise: 0.9745
+
+```{r}
+#Prediksi
+predict(mod2, n.ahead = 12)$pred
+```
+
+# Jika AR: 0.7 dan MA: -0.2
+```{r}
+set.seed(234)
+xt3 = arima.sim(n = 2000, list(ar = c(0.7), ma = c(-0.2)))
+xt3
+```
+
+```{r}
+# Mencari rata-rata dan variansi
+mean(xt3)
+var(xt3)
+```
+
+```{r}
+#Plot ACF dan PACF
+acf(xt3, lag.max = 50)
+pacf(xt3, lag.max = 50)
+```
+
+# Interpretasi:
+1. ACF: menurun secara cepat mendekati 0.
+2. PACF: menurun scara cepat mendekati 0.
+
+```{r}
+#Memperoleh model yang sesuai (p,d,q)
+mod3 = arima(xt3, order = c(1, 0, 1))
+mod3
+# p: ar, d: differencing, q: ma
+```
+
+# Interpretasi:
+1. Estimasi rata-rata: -0.0230
+2. Slope dari AR: 0.7213
+3. slope dari MA: -0.2374
+4. Estimasi white noise: 0.9744
+
+```{r}
+#Prediksi
+predict(mod3, n.ahead = 12)$pred
+```
+
+# 2. 2.	Apakah sesuai dengan plot ACF pada kelas teori slide 10?
+Plot ACF suda sesuai dengan materi tersebut.

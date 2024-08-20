@@ -1,0 +1,130 @@
+---
+title: "Responsi 2"
+author: "Laksmi"
+date: "2024-06-14"
+output: html_document
+---
+
+# Import Data
+```{r}
+library(timeSeries)
+sunspot.year
+
+plot(co2, xlab = "Tahun", ylab = "Sunspot")
+
+```
+
+# ACF dan PACF
+```{r}
+library(astsa)
+acf2(sunspot.year, 50)
+```
+
+# Cek Stasioneritas
+```{r}
+library(tseries)
+
+# stasioner rataan pvalue < 0.05
+adf.test(sunspot.year)
+
+# stasioner varians pvalue > 0.05
+kpss.test(sunspot.year, null = "Trend")
+```
+
+> Pada Stasioner rataan diperoleh p-value 0.01, sedangkan pada stasioner ragam diperoleh p-value 0.1, maka dapat dikatakan data tersebut sudah stasioner.
+
+> Karena data sudah stasioner, tidak dilakukan differencing.
+
+> Semua data ini adalah data tahunan jadi diasumsikan tidak ada pengaruh musiman, maka modelling menggunakan ARIMA.
+
+# Kandidat ARIMA
+```{r}
+#EACF
+library(TSA)
+eacf(sunspot.year, ar.max = 10, ma.max = 14)
+```
+
+# Model Fitting
+```{r}
+# Diambil 7 kandidat model ARIMA melalui plot EACF
+ARIMA206 = arima(sunspot.year, order = c(2,0,6))
+ARIMA207 = arima(sunspot.year, order = c(2,0,7))
+ARIMA306 = arima(sunspot.year, order = c(3,0,6))
+ARIMA608 = arima(sunspot.year, order = c(6,0,8))
+ARIMA609 = arima(sunspot.year, order = c(6,0,9))
+ARIMA706 = arima(sunspot.year, order = c(7,0,6))
+ARIMA707 = arima(sunspot.year, order = c(7,0,7))
+```
+
+# Menghitung Nilai AIC
+```{r}
+ARIMA206$aic
+ARIMA207$aic
+ARIMA306$aic
+ARIMA608$aic
+ARIMA609$aic
+ARIMA706$aic
+ARIMA707$aic
+```
+
+> Diperoleh nilai AIC terkecil adalah 2399.811 yang dimiliki model ARIMA(7,0,6), maka model ARIMA(7,0,6) yang dipilih
+
+# Uji Diagnostik
+```{r}
+# Plot Resiudal
+Res.ARIMA706 = residuals(ARIMA706)
+plot(Res.ARIMA706, ylab = "Residual", type = "o")
+abline(h=0, col = "red")
+```
+
+
+```{r}
+# Residual Terstandarkan
+# Residual Terstandarkan
+library (TSA)
+Res.Std.ARIMA706 = rstandard(ARIMA706)
+plot(Res.Std.ARIMA706, ylab = "Residual Terstandarkan", type = "o")
+abline(h=0, col = "red")
+```
+
+> Berdasarkan plot residual dan residual terstandarkan, dapat dikatakan tampak konsisten dan tidak menunjukkan adanya pola tertentu.
+
+```{r}
+# Plot kuantil Kenormalan
+qqnorm(Res.ARIMA706)
+qqline(Res.ARIMA706)
+```
+
+```{r}
+# ACF Residual
+acf(Res.ARIMA706)
+
+```
+
+# Ljung-Box
+```{r}
+tsdiag(ARIMA706, gof.lag = 25)
+```
+
+> Berdasarkan plot Ljung-Box di atas, semua p-value berada di atas garis putus-putus (nilai 0.05). Oleh karena itu, dapat disimpulkan bahwa model ARIMA((7,0,6) baik digunakan untuk memodelkan data sunspot.year
+
+# Prediksi
+
+```{r}
+forecast.sunspot = predict(ARIMA706, 5)
+forecast.sunspot$pred
+```
+
+> Diperoleh prediksi nilai sunspot pada 5 tahun ke depan, yaitu 143.51375, 163.14819, 153.28374, 119.87953,  74.89637
+
+```{r}
+#Plot Forecast
+U = forecast.sunspot$pred + 2*forecast.sunspot$se
+L = forecast.sunspot$pred - 2*forecast.sunspot$se
+min.y = min(sunspot.year,L)
+max.y = max(sunspot.year,U)
+ts.plot(sunspot.year, forecast.sunspot$pred, col = 1:2, ylim = c(min.y, max.y))
+lines(U, col = "blue", lty = "dashed")
+lines(L, col = "blue", lty = "dashed")
+
+```

@@ -1,0 +1,263 @@
+---
+title: "Tugas praktikum 10"
+author: "Laksmi"
+date: "2024-05-29"
+output: html_document
+---
+
+# Import Data
+```{r}
+library(readxl)
+BBNIJK <- read_excel("D:/SMT 6/PRAK ANALISIS DERET WAKTU/PERTEMUAN 2/BBNI.JK.xlsx")
+BBNIJK
+```
+
+# Preprocessing
+```{r}
+dim(BBNIJK)
+str(BBNIJK)
+
+#Missing Values
+sapply(BBNIJK, function(x) sum(is.na(x)))
+library("visdat")
+vis_miss(BBNIJK)
+summary(BBNIJK)
+
+#Ambil data
+Close = ts(BBNIJK[,5])
+Close
+```
+
+# Plot
+```{r}
+plot.ts(Close)
+```
+
+> Berdasarkan plot di atas, data tidak stasioner terhadap ragam dan rata-rata karena terdapat tren naik.
+
+# Cek Stasioneritas
+```{r}
+#Cek Stationeritas Ragam
+library(astsa)
+library(tseries)
+library(forecast)
+library(TSA)
+bc = BoxCox.lambda(Close)
+bc
+
+#Cek Stationeritas Rataan
+adf.test(Close)
+```
+
+```{r}
+#Pemeriksaan ACF dan PACF
+acf2(Close)
+
+#Melakukan differencing terhadap tren
+diff1.Close = diff(Close)
+plot.ts(diff1.Close)
+diff2.Close = diff(diff1.Close)
+plot(diff2.Close)
+```
+
+```{r}
+#Melihat plot dalam bentuk matriks
+par(mfrow=c(3,1))
+plot.ts(Close)
+plot.ts(diff1.Close, col = "blue")
+plot.ts(diff2.Close, col = "red")
+
+#Transformasi
+AP=Close
+log.AP = log(AP)
+par(mfrow = c(2,1))
+plot.ts(AP)
+plot.ts(log.AP, col = 'blue')
+```
+
+```{r}
+#Melakukan differencing pada log AP
+par(mfrow=c(3,1))
+plot(log.AP)
+diff1.log.AP = diff(log.AP)
+plot.ts(diff1.log.AP)
+diff2.log.AP = diff(diff1.log.AP)
+plot.ts(diff2.log.AP)
+```
+
+```{r}
+#Melihat ACF tanpa transformasi logaritma
+library(astsa)
+acf2(Close)
+acf2(diff1.Close)
+acf2(diff2.Close)
+
+#Melihat ACF dengan transformasi logaritma
+library(astsa)
+acf2(log.AP)
+acf2(diff1.log.AP)
+acf2(diff2.log.AP)
+```
+
+```{r}
+#Panggil lagi yang terpilih
+diff2.Close = diff(diff1.Close)
+plot.ts(diff2.Close)
+acf2(diff2.Close)
+```
+
+# EACF
+```{r}
+library(TSA)
+eacf(diff2.Close, ar.max = 8, ma.max = 14)
+```
+
+# Kandidat
+```{r}
+Close.ARIMA.0.2.1 = arima(Close, order = c(0,2,1))
+Close.ARIMA.0.2.1
+```
+
+```{r}
+Close.ARIMA.1.2.2 = arima(Close, order = c(1,2,2))
+Close.ARIMA.1.2.2
+```
+
+```{r}
+Close.ARIMA.2.2.3 = arima(Close, order = c(2,2,3))
+Close.ARIMA.2.2.3
+```
+
+```{r}
+Close.ARIMA.1.2.1 = arima(Close, order = c(1,2,1))
+Close.ARIMA.1.2.1
+```
+
+```{r}
+Close.ARIMA.0.2.2 = arima(Close, order = c(0,2,2))
+Close.ARIMA.0.2.2
+```
+
+# Melihat AIC
+```{r}
+Close.ARIMA.0.2.1$aic
+Close.ARIMA.1.2.2$aic
+Close.ARIMA.2.2.3$aic
+Close.ARIMA.1.2.1$aic
+Close.ARIMA.0.2.2$aic
+```
+
+```{r}
+Close.ARIMA = c("IMA(2,1)","ARIMA(1,2,2)", "ARIMA(2,2,3)", "ARIMA(1,2,1)", "IMA(2,2)")
+AIC = c (Close.ARIMA.0.2.1$aic, Close.ARIMA.1.2.2$aic, Close.ARIMA.2.2.3$aic, Close.ARIMA.1.2.1$aic, Close.ARIMA.0.2.2$aic)
+Close.AIC = cbind(Close.ARIMA, AIC)
+Close.AIC
+```
+
+> Pada soal praktikum ini, menggunakan model IMA(2,1)
+
+# Uji Diagnostik
+```{r}
+# Plot Resiudal
+Close.ARIMA.0.2.1 = arima(Close, order = c(0,2,1))
+Res.Close.ARIMA021 = residuals(Close.ARIMA.0.2.1)
+plot(Res.Close.ARIMA021, ylab = "Residual", type = "o")
+abline(h=0, col = "red")
+```
+
+```{r}
+# Residual Terstandarkan
+library (TSA)
+Res.Std.Close.ARIMA021 = rstandard(Close.ARIMA.0.2.1)
+plot(Res.Std.Close.ARIMA021, ylab = "Residual Terstandarkan", type = "o")
+abline(h=0, col = "red")
+```
+
+```{r}
+#Plot kuantil Kenormalan
+qqnorm(Res.Close.ARIMA021)
+qqline(Res.Close.ARIMA021)
+```
+
+> Berdasarkan plot residual dan residual terstandarkan, dapat dikatakan bahwa tidak terdapat tren.
+> Berdasarkan plot kenormalan, dapat dilihat bahwa beberapa titik berada pada luar garis kuantil-kuantil.
+
+# ACF residual
+```{r}
+acf(Res.Close.ARIMA021)
+```
+
+> Berdasarkan plot autokorelasi di atas, dapat dilihat bahwa tidak ada yang melewati batas garis putus-putus. Oleh karena itu, dapat dikatakan bahwa tidak terdapay autokorelasi pada residual.
+
+# Ljung-Box statistik
+```{r}
+tsdiag(Close.ARIMA.0.2.1, gof.lag = 25)
+```
+
+> Berdasarkan plot Ljung-Box di atas, semua p-value berada di atas garis putus-putus (nilai 0.05). Oleh karena itu, dapat disimpulkan bahwa model ARIMA(2,2,3) baik digunakan untuk memodelkan data BNI.
+
+# Prediksi
+```{r}
+forecast.Close = predict(Close.ARIMA.2.2.3, 12)
+forecast.Close$pred
+
+# Plot Prediksi
+U = forecast.Close$pred + 2*forecast.Close$se #hasil error dari peramalan
+L = forecast.Close$pred - 2*forecast.Close$se
+min.y = min(Close,L) #batas minimum sumbu y
+max.y = max(Close,U) #batas makssimum sumbu y
+ts.plot (Close, forecast.Close$pred, col = 1:2, ylim = c(min.y, max.y))
+lines(U, col = 'blue', lty = "dashed")
+lines(L, col = 'blue', lty = "dashed")
+forecast_start <- end(Close)[1] + (end(Close)[2] / frequency(Close))
+abline(v = forecast_start, col = 'red', lty = "dashed")
+
+```
+
+```{r}
+model = auto.arima(Close)
+model
+```
+
+# Penanganan Missing Value
+```{r}
+# CCA --> menghapus baris dan kolom yang mengandung missing value
+BBNI <- read_excel("D:/SMT 6/PRAK ANALISIS DERET WAKTU/PERTEMUAN 12/BBNIJK.xlsx")
+BBNI
+
+BBNI <- BBNI[, -1]
+
+#Missing Value
+sapply(BBNI, function(x) sum(is.na(x)))
+
+library(visdat)
+vis_miss(BBNI)
+summary(BBNI)
+
+#Menghapus
+BBNI1 = BBNI[complete.cases(BBNI), ]
+sapply(BBNI1, function(x) sum(is.na(x)))
+```
+```{r}
+# MEAN
+BBNI2 <- read_excel("D:/SMT 6/PRAK ANALISIS DERET WAKTU/PERTEMUAN 12/BBNIJK.xlsx")
+BBNI2
+
+BBNI2$Close[is.na(BBNI2$Close)] = mean(BBNI2$Close, na.rm = TRUE)
+BBNI2$Open[is.na(BBNI2$Open)] = mean(BBNI2$Open, na.rm = TRUE)
+sapply(BBNI2, function(x) sum(is.na(x)))
+```
+
+```{r}
+# MEDIAN
+BBNI3 <- read_excel("D:/SMT 6/PRAK ANALISIS DERET WAKTU/PERTEMUAN 12/BBNIJK.xlsx")
+BBNI3
+
+BBNI3$Close[is.na(BBNI3$Close)] = median(BBNI3$Close, na.rm = TRUE)
+BBNI3$Open[is.na(BBNI3$Open)] = median(BBNI3$Open, na.rm = TRUE)
+sapply(BBNI2, function(x) sum(is.na(x)))
+```
+
+
+
+

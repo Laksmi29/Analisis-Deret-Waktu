@@ -1,0 +1,50 @@
+---
+title: "Tugas Pertemuan 5"
+author: "Laksmi"
+date: "2024-04-02"
+output: html_document
+---
+
+
+# 1. Model AR(2)
+```{r}
+library(astsa)
+set.seed(2)
+xt = arima.sim(n = 2000, list(ar = c(-0.7, -0.2)))
+xt
+```
+
+# 2. Mean dan varians
+```{r}
+mean(xt)
+var(xt)
+```
+
+# 3. Plot ACF dan PACF
+```{r}
+acf2(xt)
+```
+
+# Interpretasi:
+1. ACF: Dapat dilihat dari plot ACF di atas, grafik turun cepat secara eksponensial menuju 0.
+2. PACF: Dapat dilihat dari plot PACF di atas, grafik terputus setelah lag 1.
+
+# 4. Model dengan Fungsi Arima
+```{r}
+mod = arima(xt, order = c(2, 0, 0))
+mod
+```
+
+# Interpretasi:
+1. Estimasi rata-rata: 0.0214
+2. Nilai rata-rata sebenarnya: 0.02166921
+3. Slope: -0.6972
+4. Estimasi varians white noise: 1.01
+
+# 5. Prediksi 3 Periode ke Depan
+```{r}
+predict(mod, n.ahead = 3)$pred
+```
+
+# interpretasi:
+Diperoleh hasil prediksi untuk 3 periode kedepan, yaitu 0.01012730, 0.03027146, dan 0.01710890
